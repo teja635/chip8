@@ -4,6 +4,7 @@ use std::io::{Read};
 use std::fs::File;
 
 use crate::display;
+use crate::keypad;
 
 use rand::Rng;
 
@@ -105,8 +106,9 @@ impl CPU {
 		}
 	}
 
-	pub fn clock_cycle(&mut self,mut disp: &mut display::GFX) {
-		let opcode = ((self.memory[self.pc as usize] as u16) << 8) | (self.memory[self.pc as usize + 1] as u16);
+	pub fn clock_cycle(&mut self, mut disp: &mut display::GFX, mut keys: &mut keypad::Keypad) -> bool{
+		let opcode = ((self.memory[self.pc as usize] as u16) << 8) | 
+			(self.memory[self.pc as usize + 1] as u16);
 		println!("[+] Performing opcode {:x}", opcode);
 		match opcode & 0xF000 {
 			0x0000 => {
@@ -212,10 +214,35 @@ impl CPU {
 					disp.write_to_gfx(self.V[x] as usize, (self.V[y] + i) as usize, self.memory[(self.I + (i as u16)) as usize]);
 				}
 				self.pc += 2; 
+				return true
 			},
-			0xE000 => {},
-			0xF000 => {},
+			0xE000 => {
+				match opcode & 0x00FF {
+					0x009E => {
+						let x = get_reg_x(opcode);
+						
+						self.pc += if keys.is_pressed(self.V[x]).unwrap() { 4 } else { 2 };
+					},
+					0x00A1 => {
+						let x = get_reg_x(opcode);
+						
+						self.pc += if !keys.is_pressed(self.V[x]).unwrap() { 4 } else { 2 };
+					},
+					_ => {},
+				}
+			},
+			0xF000 => {
+				match opcode & 0x00FF {
+					0x001E => {
+						let x = get_reg_x(opcode);
+						self.I = self.I + self.V[x] as u16;
+						self.pc += 2;
+					},
+					_ => panic!("[-] Invalid instruction {}", opcode)
+				}
+			},
 			_ => panic!("[-] Invalid Opcode {}", opcode),
 		}
+		return false
 	}
 }

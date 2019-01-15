@@ -76,9 +76,11 @@ impl CHIP8 {
 					_								=> continue,
 				}
 			}
-			self.processor.clock_cycle(&mut self.disp);
-			self.display();
-			self.processor.dump_registers();
+			let changed_disp = self.processor.clock_cycle(&mut self.disp, &mut self.keypad);
+			if changed_disp {
+				self.display();
+			}
+			//self.processor.dump_registers();
 			thread::sleep(time::Duration::from_millis(1));
 		}
 	}
