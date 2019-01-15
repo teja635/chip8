@@ -6,3 +6,6 @@ edition = "2018"
 
 [dependencies]
 ncurses = "5.98.0"
+sdl2 = "0.32"
+rand = "0.6"
+

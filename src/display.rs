@@ -30,9 +30,15 @@ impl GFX {
 
 	pub fn pixel_at(&self, x: usize, y: usize) -> Result<bool, ()> {
 		if x < 64 {
-        Ok(self.memory[y] & ((1) << x) != 0)
+        Ok(self.memory[y] & ((1 as u64) << (64 - 1 - x)) != 0)
     } else {
         Err(())
     }
+	}
+
+	pub fn clear_display(&mut self) {
+		for idx in 0..32 {
+			self.memory[idx] = 0;
+		}
 	}
 }
