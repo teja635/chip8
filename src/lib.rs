@@ -1,12 +1,15 @@
 extern crate ncurses; 
 extern crate sdl2;
+
 use ncurses::*; 
 use sdl2::event::{Event};
 use sdl2::rect::{Rect};
 use sdl2::pixels::{Color};
+use std::{thread, time};
 
 mod display;
 mod cpu;
+mod keypad; 
 
 pub struct CHIP8 {
 	disp: display::GFX,
@@ -15,6 +18,7 @@ pub struct CHIP8 {
 	timer: sdl2::TimerSubsystem, 
 	canvas: sdl2::render::Canvas<sdl2::video::Window>,
 	processor: cpu::CPU,
+	keypad: keypad::Keypad,
 }
 
 pub fn init(program: &str) -> Result<CHIP8, &'static str> {
@@ -35,6 +39,7 @@ pub fn init(program: &str) -> Result<CHIP8, &'static str> {
 				timer: timer,
 				canvas: canvas,
 				processor: cpu::init(program).unwrap(),
+				keypad: keypad::init().unwrap(),
 			})
 }
 
@@ -56,10 +61,6 @@ impl CHIP8 {
 	}
 
 	pub fn run(&mut self) {
-		let byte: u8 = 0b1111_1111;
-		self.disp.write_to_gfx(60, 0, byte);
-		self.processor.dump_memory(0x200, 0x250);
-		
 		let mut events = self.ctx.event_pump().unwrap();
 		
 		'event: loop {
@@ -67,13 +68,18 @@ impl CHIP8 {
 				match event {
 					Event::Quit{..} => break 'event, 
 					Event::KeyDown{timestamp, window_id, keycode, scancode, keymod, repeat} => {
-						self.processor.clock_cycle(&mut self.disp);
-						self.display();
-						self.processor.dump_registers();
+						self.keypad.keydown(keycode.unwrap());
+					},
+					Event::KeyUp{timestamp, window_id, keycode, scancode, keymod, repeat} => {
+						self.keypad.keyup(keycode.unwrap());
 					},
 					_								=> continue,
 				}
 			}
+			self.processor.clock_cycle(&mut self.disp);
+			self.display();
+			self.processor.dump_registers();
+			thread::sleep(time::Duration::from_millis(1));
 		}
 	}
 }
