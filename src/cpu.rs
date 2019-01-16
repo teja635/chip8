@@ -240,7 +240,7 @@ impl CPU {
 						self.V[x] = self.dt;
 					},
 					0x000A => {
-						panic!("[-] Needs to wait for a key and then incremt")
+						self.pc += 2; 
 					},
 					0x0015 => {
 						let x = get_reg_x(opcode);
