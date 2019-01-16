@@ -81,7 +81,7 @@ impl CHIP8 {
 				self.display();
 			}
 			//self.processor.dump_registers();
-			thread::sleep(time::Duration::from_millis(1));
+			thread::sleep(time::Duration::from_millis(10));
 		}
 	}
 }

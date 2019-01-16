@@ -15,6 +15,7 @@ pub struct CPU {
 	memory: [u8; 4096],
 	stack: [u16; 16],
 	sp: u16,
+	dt: u8,
 }
 
 pub fn init(program: &str) -> Result<CPU, &'static  str> {
@@ -52,6 +53,7 @@ pub fn init(program: &str) -> Result<CPU, &'static  str> {
 		memory: memory,
 		stack: [0; 16],
 		sp: 0,
+		dt: 0,
 	})
 }
 
@@ -119,7 +121,7 @@ impl CPU {
 								disp.clear_display();
 								self.pc += 2;
 							},
-							_ 			=> panic!("[-] Invalid Opcode {}", opcode),
+							_ 			=> panic!("[-] Invalid Opcode {:x}", opcode),
 						}
 					},
 					0x000E => {
@@ -127,7 +129,7 @@ impl CPU {
 							self.pc = self.stack_pop().unwrap();
 						}
 					},
-					_ => panic!("[-] Invalid Opcode {}", opcode),
+					_ => panic!("[-] Invalid Opcode {:x}", opcode),
 				}
 			},
 			0x1000 => {
@@ -233,15 +235,55 @@ impl CPU {
 			},
 			0xF000 => {
 				match opcode & 0x00FF {
+					0x000F => {
+						let x = get_reg_x(opcode);
+						self.V[x] = self.dt;
+					},
+					0x000A => {
+						panic!("[-] Needs to wait for a key and then incremt")
+					},
+					0x0015 => {
+						let x = get_reg_x(opcode);
+						self.dt = self.V[x];
+					},
+					0x0018 => {
+						panic!("[-] Sound timer is not yet set.");
+					},
 					0x001E => {
 						let x = get_reg_x(opcode);
 						self.I = self.I + self.V[x] as u16;
 						self.pc += 2;
 					},
-					_ => panic!("[-] Invalid instruction {}", opcode)
+					0x0029 => {
+						let x = get_reg_x(opcode);
+						self.I = (self.V[x] as u16) * 5; 
+						self.pc += 2;
+					}, 
+					0x0033 => {
+						let x = get_reg_x(opcode);
+						self.memory[self.I as usize] = (self.V[x]/100) % 10;
+						self.memory[(self.I + 1) as usize] = (self.V[x]/10) % 10;
+						self.memory[(self.I + 2) as usize] = self.V[x] % 10;
+						self.pc += 2; 
+					}, 
+					0x0055 => {
+						let x = get_reg_x(opcode);
+						for reg in 0..x {
+							self.memory[(self.I as usize) + reg] = self.V[reg];
+						}
+						self.pc += 2; 
+					},
+					0x0065 => {
+						let x = get_reg_x(opcode);
+						for reg in 0..x {
+							self.V[reg] = self.memory[(self.I as usize) + reg];
+						}
+						self.pc += 2; 
+					},
+					_ => panic!("[-] Invalid instruction {:x}", opcode),
 				}
 			},
-			_ => panic!("[-] Invalid Opcode {}", opcode),
+			_ => panic!("[-] Invalid Opcode {:x}", opcode),
 		}
 		return false
 	}
