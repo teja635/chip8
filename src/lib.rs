@@ -1,7 +1,5 @@
-extern crate ncurses; 
 extern crate sdl2;
 
-use ncurses::*; 
 use sdl2::event::{Event};
 use sdl2::rect::{Rect};
 use sdl2::pixels::{Color};
@@ -80,7 +78,6 @@ impl CHIP8 {
 			if changed_disp {
 				self.display();
 			}
-			//self.processor.dump_registers();
 			thread::sleep(time::Duration::from_millis(10));
 		}
 	}

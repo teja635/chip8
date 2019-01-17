@@ -16,6 +16,7 @@ pub struct CPU {
 	stack: [u16; 16],
 	sp: u16,
 	dt: u8,
+	st: u8,
 }
 
 pub fn init(program: &str) -> Result<CPU, &'static  str> {
@@ -54,6 +55,7 @@ pub fn init(program: &str) -> Result<CPU, &'static  str> {
 		stack: [0; 16],
 		sp: 0,
 		dt: 0,
+		st: 0,
 	})
 }
 
