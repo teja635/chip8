@@ -8,6 +8,7 @@ use std::{thread, time};
 mod display;
 mod cpu;
 mod keypad; 
+mod assembler;
 
 pub struct CHIP8 {
 	disp: display::GFX,
@@ -39,6 +40,10 @@ pub fn init(program: &str) -> Result<CHIP8, &'static str> {
 				processor: cpu::init(program).unwrap(),
 				keypad: keypad::init().unwrap(),
 			})
+}
+
+pub fn assemble(program: &str, output_binary: &str) {
+	assembler::assemble(program, output_binary);
 }
 
 impl CHIP8 {
@@ -78,7 +83,7 @@ impl CHIP8 {
 			if changed_disp {
 				self.display();
 			}
-			thread::sleep(time::Duration::from_millis(10));
+			thread::sleep(time::Duration::from_millis(5));
 		}
 	}
 }

@@ -1,3 +1,7 @@
+/**
+ * Graphics drivers
+ *
+ */
 pub struct GFX {
 	pub memory: [u64; 32],
 }
